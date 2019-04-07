@@ -1,5 +1,7 @@
 // @ts-check
 
+/// <reference path="./chat.ts" />
+
 /**
  * @param {CommentEntry} entry 
  */
