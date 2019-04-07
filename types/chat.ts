@@ -1,10 +1,6 @@
 // @ts-check
 
-/** 评论 ID */
-type CommentID = string;
-
-/** 用户公钥 */
-type UserKey = string;
+/// <reference path="../types/entry.ts" />
 
 interface CommentPayload {
     /** 创建时间 */
@@ -17,17 +13,12 @@ interface CommentPayload {
     content: string;
 }
 
-interface CommentEntry {
+interface CommentEntry extends Entry {
     /** 评论 ID */
     cid: CommentID;
 
     /** 作者的用户公钥 */
     key: UserKey;
-
-    /** Lamport Clock */
-    clock: {
-        time: number;
-    }
 
     payload: {
         value: CommentPayload;

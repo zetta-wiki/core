@@ -141,7 +141,7 @@ class Comments {
         return keys.every(key => payload.hasOwnProperty(key))
             && !isNaN(Date.parse(payload.date))
             && typeof payload.content === "string"
-            && (payload.date === null || typeof payload.date === "string")
+            && (payload.parent === null || typeof payload.parent === "string")
     }
 
 }
