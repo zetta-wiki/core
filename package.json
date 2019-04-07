@@ -1,0 +1,27 @@
+{
+    "name": "@zetta-wiki/core",
+    "version": "0.1.0",
+    "description": "",
+    "main": "main.js",
+    "author": "Xmader",
+    "homepage": "https://github.com/zetta-wiki/core#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zetta-wiki/core.git"
+    },
+    "bugs": {
+        "url": "https://github.com/zetta-wiki/core/issues"
+    },
+    "dependencies": {
+        "ipfs": "^0.33.0",
+        "orbit-db": "^0.20.0-rc.1"
+    },
+    "devDependencies": {
+        "@types/ipfs": "git+https://github.com/survirtual/types-ipfs.git",
+        "@types/orbit-db": "git+https://github.com/orbitdb/orbit-db-types.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "license": "MIT"
+}
