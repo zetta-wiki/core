@@ -38,6 +38,9 @@ interface CommentObj extends CommentPayload {
     /** 评论 ID (CommentEntry.cid) */
     id: CommentID;
 
+    /** 顺序 (基于 Lamport Clock) */
+    order: number;
+
     /** 作者的用户公钥 (CommentEntry.key) */
     author: UserKey;
 

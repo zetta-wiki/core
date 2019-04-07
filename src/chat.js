@@ -31,8 +31,10 @@ class Comments {
 
         /** @type {CommentObj[]} */
         const parsedEntries = this._entries.filter(isValid).map((x) => {
+            const clock = x.clock && x.clock.time
             return {
                 id: x.cid,
+                order: Number.isInteger(clock) ? clock : -1,
                 author: x.key,
                 ...x.payload.value,
                 deleted: isDeleted(x) || undefined,
@@ -117,7 +119,11 @@ class Comments {
      */
     static _sort(array) {
         return array.sort((a, b) => {
-            return +new Date(a.date) - +new Date(b.date)
+            if (a.order == b.order) {
+                return +new Date(a.date) - +new Date(b.date)
+            } else {
+                return a.order - b.order
+            }
         })
     }
 
