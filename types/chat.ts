@@ -3,6 +3,9 @@
 /** 评论 ID */
 type CommentID = string;
 
+/** 用户公钥 */
+type UserKey = string;
+
 interface CommentPayload {
     /** 创建时间 */
     date: string;
@@ -19,7 +22,7 @@ interface CommentEntry {
     cid: CommentID;
 
     /** 作者的用户公钥 */
-    key: string;
+    key: UserKey;
 
     payload: {
         value: CommentPayload;
@@ -31,7 +34,10 @@ interface CommentObj extends CommentPayload {
     id: CommentID;
 
     /** 作者的用户公钥 (CommentEntry.key) */
-    author: string;
+    author: UserKey;
 
     children?: CommentObj[] | null;
+
+    /** 评论是否已删除 */
+    deleted?: boolean;
 }

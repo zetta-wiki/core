@@ -21,8 +21,10 @@ const isValidComment = (entry) => {
 
 /**
  * @param {CommentEntry[]} entries 
+ * @param {CommentID[]} deletedComments
+ * @param {UserKey[]} bannedUsers
  */
-const toTree = (entries) => {
+const toTree = (entries, bannedUsers = [], deletedComments = []) => {
 
     /** @type {CommentObj[]} */
     const parsedEntries = entries.filter(isValidComment).map((x) => {
@@ -40,6 +42,15 @@ const toTree = (entries) => {
     )
 
     for (const entry of parsedEntries) {
+
+        // 评论是否是已删除状态
+        if (
+            bannedUsers.includes(entry.author)
+            || deletedComments.includes(entry.id)
+        ) {
+            entry.deleted = true
+        }
+
         const parent = entry.parent && entriesMap.get(entry.parent)
         if (parent) {
             if (!parent.children) {
@@ -66,10 +77,10 @@ const toTree = (entries) => {
 }
 
 const _UNIT_TEST = () => {
-    const tree = toTree([
+    const entries = [
         {
             cid: "a",
-            key: "",
+            key: "banned",
             payload: {
                 value: {
                     date: "2019-04-07T04:09:57.603Z",
@@ -122,7 +133,8 @@ const _UNIT_TEST = () => {
                 }
             }
         },
-    ])
+    ]
+    const tree = toTree(entries, ["banned"])
     console.log(JSON.stringify(tree, null, 4))
 }
 
