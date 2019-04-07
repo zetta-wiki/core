@@ -24,6 +24,11 @@ interface CommentEntry {
     /** 作者的用户公钥 */
     key: UserKey;
 
+    /** Lamport Clock */
+    clock: {
+        time: number;
+    }
+
     payload: {
         value: CommentPayload;
     };

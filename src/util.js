@@ -10,10 +10,10 @@
  * @param {OrbitDB} orbitdb the OrbitDB instance
  * @returns {Promise<boolean>}
  */
-const isValid = async (addr, orbitdb) => {
+const isValidAddr = async (addr, orbitdb) => {
 
     // @ts-ignore
-    const { isValidAddress } = require('orbit-db')
+    const { isValidAddress } = require("orbit-db")
 
     if (isValidAddress(addr)) {
         const db = await orbitdb.open(addr)
@@ -35,7 +35,16 @@ const isDefined = (x) => {
     return typeof x !== "undefined"
 }
 
+/**
+ * @template T
+ * @param {Array<T>} array 
+ */
+const safeArray = (array) =>{
+    return Array.isArray(array) ? array.concat() : []
+}
+
 module.exports = {
-    isValid,
+    isValidAddr,
     isDefined,
+    safeArray,
 }

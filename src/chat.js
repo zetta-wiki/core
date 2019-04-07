@@ -2,85 +2,152 @@
 
 /// <reference path="../types/chat.ts" />
 
-/**
- * @param {CommentEntry} entry 
- */
-const isValidComment = (entry) => {
-    const payload = entry.payload.value
-    const keys = [
-        "date",
-        "parent",
-        "content",
-    ]
+const { safeArray } = require("./util.js")
 
-    return keys.every(key => payload.hasOwnProperty(key))
-        && !isNaN(Date.parse(payload.date))
-        && typeof payload.content === "string"
-        && (payload.date === null || typeof payload.date === "string")
-}
+class Comments {
 
-/**
- * @param {CommentEntry[]} entries 
- * @param {CommentID[]} deletedComments
- * @param {UserKey[]} bannedUsers
- */
-const toTree = (entries, bannedUsers = [], deletedComments = []) => {
+    /**
+     * @param {CommentEntry[]} entries 
+     * @param {UserKey[]} bannedUsers
+     * @param {CommentID[]} deletedComments
+     */
+    constructor(entries, bannedUsers = [], deletedComments = []) {
+        this._entries = safeArray(entries)
+        this._bannedUsers = safeArray(bannedUsers)
+        this._deletedComments = safeArray(deletedComments)
 
-    /** @type {CommentObj[]} */
-    const parsedEntries = entries.filter(isValidComment).map((x) => {
-        return {
-            id: x.cid,
-            author: x.key,
-            ...x.payload.value
-        }
-    })
+        this._parseEntries()
 
-    const entriesMap = new Map(
-        parsedEntries.map((x) => {
-            return [x.id, x]
-        })
-    )
-
-    for (const entry of parsedEntries) {
-
-        // 评论是否是已删除状态
-        if (
-            bannedUsers.includes(entry.author)
-            || deletedComments.includes(entry.id)
-        ) {
-            entry.deleted = true
-        }
-
-        const parent = entry.parent && entriesMap.get(entry.parent)
-        if (parent) {
-            if (!parent.children) {
-                parent.children = []
-            }
-            parent.children.push(entry)
-        }
+        /** @type {CommentObj[]} */
+        this._commentsTree = null
     }
 
-    /** @type {CommentObj[]} */
-    const entriesTree = []
-    entriesMap.forEach((entry) => {
-        const parent = entry.parent
-        if (!parent || !entriesMap.get(parent)) {
-            entry.parent = null
-            return entriesTree.push(entry)
-        }
-    })
+    /**
+     * 解析、格式化评论数据
+     */
+    _parseEntries() {
+        const isDeleted = this._isDeleted.bind(this)
+        const isValid = Comments.isValidCommentEntry
 
-    return entriesTree.sort((a, b) => {
-        return +new Date(b.date) - +new Date(a.date)
-    })
+        /** @type {CommentObj[]} */
+        const parsedEntries = this._entries.filter(isValid).map((x) => {
+            return {
+                id: x.cid,
+                author: x.key,
+                ...x.payload.value,
+                deleted: isDeleted(x) || undefined,
+            }
+        })
+
+        Comments._sort(parsedEntries)
+
+        this._parsedEntries = parsedEntries
+        return parsedEntries
+    }
+
+    /**
+     * 判断评论是否是已删除状态
+     * @param {CommentEntry} entry 
+     */
+    _isDeleted(entry) {
+        const id = entry.cid
+        const author = entry.key
+        return this._bannedUsers.includes(author)
+            || this._deletedComments.includes(id)
+    }
+
+    toTree() {
+        if (this._commentsTree) {
+            return this._commentsTree
+        }
+
+        const parsedEntries = this._parsedEntries
+
+        const entriesMap = new Map(
+            parsedEntries.map((x) => {
+                return [x.id, x]
+            })
+        )
+
+        for (const entry of parsedEntries) {
+            const parent = entry.parent && entriesMap.get(entry.parent)
+            if (parent) {
+                if (!parent.children) {
+                    parent.children = []
+                }
+                parent.children.push(entry)
+            }
+        }
+
+        /** @type {CommentObj[]} */
+        const entriesTree = []
+        entriesMap.forEach((entry) => {
+            const parent = entry.parent
+            if (!parent || !entriesMap.get(parent)) {
+                entry.parent = null
+                return entriesTree.push(entry)
+            }
+        })
+
+        const tree = Comments._sort(entriesTree).reverse()
+
+        this._commentsTree = tree
+        return tree
+    }
+
+    /**
+     * @param {string | number} space 
+     */
+    toJSON(space = 0) {
+        if (!this._commentsTree) {
+            this._commentsTree = this.toTree()
+        }
+
+        const tree = this._commentsTree.concat()
+        tree.toString = () => {
+            return JSON.stringify(tree, null, space)
+        }
+
+        return tree
+    }
+
+    /**
+     * 排序 CommentObj[]
+     * @param {CommentObj[]} array 
+     */
+    static _sort(array) {
+        return array.sort((a, b) => {
+            return +new Date(a.date) - +new Date(b.date)
+        })
+    }
+
+    /**
+     * @param {CommentEntry} entry 
+     */
+    static isValidCommentEntry(entry) {
+        const payload = entry.payload.value
+        const keys = [
+            "date",
+            "parent",
+            "content",
+        ]
+
+        return keys.every(key => payload.hasOwnProperty(key))
+            && !isNaN(Date.parse(payload.date))
+            && typeof payload.content === "string"
+            && (payload.date === null || typeof payload.date === "string")
+    }
 
 }
+
+module.exports = Comments
 
 const _UNIT_TEST = () => {
     const entries = [
         {
             cid: "a",
             key: "banned",
+            clock: { time: 1 },
             payload: {
                 value: {
                     date: "2019-04-07T04:09:57.603Z",
@@ -92,6 +159,7 @@ const _UNIT_TEST = () => {
         {
             cid: "b",
             key: "",
+            clock: { time: 2 },
             payload: {
                 value: {
                     date: "2019-04-07T04:09:57.603Z",
@@ -103,9 +171,10 @@ const _UNIT_TEST = () => {
         {
             cid: "c",
             key: "",
+            clock: { time: 3 },
             payload: {
                 value: {
-                    date: "2019-04-07T04:09:57.603Z",
+                    date: "2019-04-07T04:10:57.603Z",
                     parent: "a",
                     content: ""
                 }
@@ -114,6 +183,7 @@ const _UNIT_TEST = () => {
         {
             cid: "d",
             key: "",
+            clock: { time: 4 },
             payload: {
                 value: {
                     date: "2019-04-07T04:09:57.603Z",
@@ -125,6 +195,7 @@ const _UNIT_TEST = () => {
         {
             cid: "e",
             key: "",
+            clock: { time: 5 },
             payload: {
                 value: {
                     date: "2019-04-07T05:09:57.603Z",
@@ -134,8 +205,11 @@ const _UNIT_TEST = () => {
             }
         },
     ]
-    const tree = toTree(entries, ["banned"])
+    const comments = new Comments(entries, ["banned"])
+    const tree = comments.toTree()
     console.log(JSON.stringify(tree, null, 4))
+    // console.log(JSON.stringify(comments, null, 4))
+    // require("fs").writeFileSync("1.json", comments.toJSON())
 }
 
 _UNIT_TEST()
