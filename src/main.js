@@ -23,6 +23,10 @@ const defaultIPFS = new IPFS({
  * @type {InitOptions}
  */
 const defaultOptions = {
+    name: "ZettaWiki",
+    mainDB: null,
+    adminDB: null,
+    administrators: ["*"],
     ipfs: null,
     errCallback: (e) => console.error(e),
 
@@ -35,7 +39,7 @@ class ZettaWiki {
      * @param {OrbitDB} orbitdb 一个 OrbitDB 实例
      * @param {InitOptions} options 
      */
-    constructor(orbitdb, options = {}) {
+    constructor(orbitdb, options = defaultOptions) {
         if (!isDefined(orbitdb)) {
             throw new Error("OrbitDB is a required argument. See https://github.com/zetta-wiki/core/")
         }
@@ -50,7 +54,7 @@ class ZettaWiki {
     /**
      * @param {InitOptions} options 
      */
-    static async createInstance(options = {}) {
+    static async createInstance(options = defaultOptions) {
 
         const ipfs = options.ipfs || defaultIPFS
         ipfs.on("error", (e) => console.error(e))
