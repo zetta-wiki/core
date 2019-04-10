@@ -1,10 +1,11 @@
 // @ts-check
 
 /// <reference path="../types/admin.ts" />
+/// <reference path="../types/main.ts" />
 
 const { safeArray } = require("./util.js")
 
-class Admin {
+class AdminInfo {
 
     /**
      * @param {AdminEntry[]} entries
@@ -15,7 +16,7 @@ class Admin {
 
         this._entries = safeArray(entries)
             .filter(x => this._isValidAdminEntry(x))
-            .sort(Admin._sortFn)
+            .sort(AdminInfo._sortFn)
 
         this._bannedUsers = null
         this._deletedComments = null
@@ -128,13 +129,56 @@ class Admin {
      * @param {AdminEntry[]} array 
      */
     static _sort(array) {
-        return array.sort(Admin._sortFn)
+        return array.sort(AdminInfo._sortFn)
+    }
+
+}
+
+class Admin {
+
+    /**
+     * @param {EventStore<any>} db 管理员数据库实例 (已加载状态)
+     * @param {string[]} administrators 
+     */
+    constructor(db, administrators) {
+        this.db = db
+        this.administrators = administrators
+    }
+
+    _getAdminInfo() {
+        const entries = this.db.iterator({ limit: -1 }).collect()
+
+        // @ts-ignore
+        return new AdminInfo(entries, this.administrators)
+    }
+
+    getBannedUsers() {
+        return this._getAdminInfo().getBannedUsers()
+    }
+
+    getDeletedComments() {
+        return this._getAdminInfo().getDeletedComments()
+    }
+
+    /**
+     * @param {OrbitDB} orbitdb 
+     * @param {string} adminDB 
+     * @param {string[]} administrators 
+     */
+    static async createInstance(orbitdb, adminDB, administrators) {
+        // 打开数据库
+        // @ts-ignore
+        const db = await orbitdb.log(adminDB, { create: false })
+        await db.load()
+
+        return new Admin(db, administrators)
     }
 
 }
 
 module.exports = Admin
 
+/* eslint-disable-next-line no-unused-vars */
 const _UNIT_TEST = () => {
     /** @type {AdminEntry[]} */
     const entries = [
@@ -191,10 +235,8 @@ const _UNIT_TEST = () => {
             }
         },
     ]
-    const admin = new Admin(entries)
+    const admin = new AdminInfo(entries)
     console.log(admin.getBannedUsers())
     console.log(admin.getDeletedComments())
 }
-
-_UNIT_TEST()
 

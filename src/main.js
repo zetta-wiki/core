@@ -51,6 +51,14 @@ class ZettaWiki {
         this.orbitdb = orbitdb
     }
 
+    get swarm() {
+        if (this.options.ipfs) {
+            return this.options.ipfs.swarm
+        } else {
+            return null
+        }
+    }
+
     /**
      * @param {InitOptions} options 
      */

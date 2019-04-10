@@ -148,6 +148,7 @@ class Comments {
 
 module.exports = Comments
 
+/* eslint-disable-next-line no-unused-vars */
 const _UNIT_TEST = () => {
     const entries = [
         {
@@ -218,4 +219,3 @@ const _UNIT_TEST = () => {
     // require("fs").writeFileSync("1.json", comments.toJSON())
 }
 
-_UNIT_TEST()
