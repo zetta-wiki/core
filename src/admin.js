@@ -5,6 +5,17 @@
 
 const { safeArray } = require("./util.js")
 
+class PermissionError extends Error {
+    /**
+     * @param {string} message 
+     */
+    constructor(message = "Current user is not an administrator.") {
+        if (message) message = ": " + message
+        super("Permission denied" + message)
+        this.name = "PermissionError"
+    }
+}
+
 class AdminInfo {
 
     /**
@@ -145,11 +156,13 @@ class Admin {
         this.administrators = administrators
     }
 
-    _getAdminInfo() {
-        const entries = this.db.iterator({ limit: -1 }).collect()
+    _getEntries() {
+        return this.db.iterator({ limit: -1 }).collect()
+    }
 
+    _getAdminInfo() {
         // @ts-ignore
-        return new AdminInfo(entries, this.administrators)
+        return new AdminInfo(this._getEntries(), this.administrators)
     }
 
     getBannedUsers() {
@@ -158,6 +171,77 @@ class Admin {
 
     getDeletedComments() {
         return this._getAdminInfo().getDeletedComments()
+    }
+
+    /**
+     * 判断当前用户是否是管理员
+     */
+    _isAdmin() {
+        const { db, administrators } = this
+
+        /** 
+         * 当前用户公钥
+         * @type {string}
+         */
+        // @ts-ignore
+        const key = db.identity.publicKey
+
+        return administrators.includes(key) || administrators.includes("*")
+    }
+
+    /**
+     * @private
+     * 添加管理记录
+     * @param {AdminTarget} target 
+     * @param {string} targetID 
+     * @param {AdminCommandText} command 
+     */
+    _add(target, targetID, command) {
+        if (!this._isAdmin()) {
+            throw new PermissionError()
+        }
+
+        /** @type {AdminPayload} */
+        const payload = {
+            date: new Date().toISOString(),
+            target,
+            targetID,
+            command,
+        }
+
+        return this.db.add(payload)
+    }
+
+    /**
+     * @param {UserKey} userKey 管理对象的用户公钥
+     * @returns {Promise<string>} 此条管理记录的 hash
+     */
+    banUser(userKey) {
+        return this._add("user", userKey, "ban")
+    }
+
+    /**
+     * @param {UserKey} userKey 管理对象的用户公钥
+     * @returns {Promise<string>} 此条管理记录的 hash
+     */
+    unbanUser(userKey) {
+        return this._add("user", userKey, "unban")
+    }
+
+    /**
+     * @param {CommentID} commentID 评论ID
+     * @returns {Promise<string>} 此条管理记录的 hash
+     */
+    deleteComment(commentID) {
+        return this._add("comment", commentID, "delete")
+    }
+
+    /**
+     * @param {CommentID} commentID 评论ID
+     * @returns {Promise<string>} 此条管理记录的 hash
+     */
+    undeleteComment(commentID) {
+        return this._add("comment", commentID, "undelete")
     }
 
     /**

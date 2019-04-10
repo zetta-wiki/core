@@ -21,12 +21,14 @@ interface AdminCommand {
 
 type AdminCommandText = keyof AdminCommand;
 
+type AdminTarget = "page" | "comment" | "user";
+
 interface AdminPayload {
     /** 创建时间 */
     date: string;
 
     /** 管理的目标 */
-    target: "page" | "comment" | "user";
+    target: AdminTarget;
 
     targetID: PageHash | CommentID | UserKey;
 
