@@ -32,7 +32,7 @@ const isValidAddr = async (addr, orbitdb) => {
  * @param {any} x 
  */
 const isDefined = (x) => {
-    return typeof x !== "undefined"
+    return typeof x !== "undefined" && x !== null
 }
 
 /**

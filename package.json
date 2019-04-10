@@ -18,7 +18,7 @@
     },
     "devDependencies": {
         "@types/ipfs": "git+https://github.com/survirtual/types-ipfs.git",
-        "@types/orbit-db": "git+https://github.com/orbitdb/orbit-db-types.git"
+        "@types/orbit-db": "git+https://github.com/zetta-wiki/orbit-db-types.git"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
