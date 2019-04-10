@@ -14,7 +14,7 @@
     },
     "dependencies": {
         "ipfs": "^0.33.0",
-        "orbit-db": "^0.20.0-rc.1"
+        "orbit-db": "^0.20.0-rc2"
     },
     "devDependencies": {
         "@types/ipfs": "git+https://github.com/survirtual/types-ipfs.git",
