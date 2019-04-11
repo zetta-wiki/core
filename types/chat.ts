@@ -7,7 +7,7 @@ interface CommentPayload {
     date: string;
 
     /** 父评论的ID */
-    parent?: string | null;
+    parent?: CommentID | null;
 
     /** 评论内容 */
     content: string;

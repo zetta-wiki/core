@@ -4,7 +4,7 @@
 
 const { safeArray } = require("./util.js")
 
-class Comments {
+class CommentsInfo {
 
     /**
      * @param {CommentEntry[]} entries 
@@ -27,7 +27,7 @@ class Comments {
      */
     _parseEntries() {
         const isDeleted = this._isDeleted.bind(this)
-        const isValid = Comments.isValidCommentEntry
+        const isValid = CommentsInfo.isValidCommentEntry
 
         /** @type {CommentObj[]} */
         const parsedEntries = this._entries.filter(isValid).map((x) => {
@@ -41,7 +41,7 @@ class Comments {
             }
         })
 
-        Comments._sort(parsedEntries)
+        CommentsInfo._sort(parsedEntries)
 
         this._parsedEntries = parsedEntries
         return parsedEntries
@@ -91,7 +91,7 @@ class Comments {
             }
         })
 
-        const tree = Comments._sort(entriesTree).reverse()
+        const tree = CommentsInfo._sort(entriesTree).reverse()
 
         this._commentsTree = tree
         return tree
@@ -146,7 +146,92 @@ class Comments {
 
 }
 
-module.exports = Comments
+class Chat {
+
+    /**
+     * @param {EventStore<any>} db 页面评论数据库数据库实例 (已加载状态)
+     * @param {Admin} admin Admin (admin.js) 实例 
+     */
+    constructor(db, admin) {
+        this.db = db
+        this.admin = admin
+    }
+
+    _getEntries() {
+        return this.db.iterator({ limit: -1 }).collect()
+    }
+
+    getCommentsTree() {
+        /** @type {CommentEntry[]} */
+        // @ts-ignore
+        const entries = this._getEntries()
+        const bannedUsers = this.admin.getBannedUsers()
+        const deletedComments = this.admin.getDeletedComments()
+
+        return new CommentsInfo(entries, bannedUsers, deletedComments)
+            .toTree()
+    }
+
+    /**
+     * @param {CommentID} commentID 评论ID
+     * @returns {Promise<string>} 此条管理记录的 hash
+     */
+    deleteComment(commentID) {
+        return this.admin.deleteComment(commentID)
+    }
+
+    /**
+     * @alias restoreComment
+     * @param {CommentID} commentID 评论ID
+     * @returns {Promise<string>} 此条管理记录的 hash
+     */
+    undeleteComment(commentID) {
+        return this.admin.undeleteComment(commentID)
+    }
+
+    /**
+     * @param {CommentID} commentID 评论ID
+     * @returns {Promise<string>} 此条管理记录的 hash
+     */
+    restoreComment(commentID) {
+        return this.undeleteComment(commentID)
+    }
+
+    /**
+     * 添加评论
+     * @param {string} content 评论内容
+     * @param {CommentID} parent 父评论的 评论ID (hash)
+     * @returns {Promise<CommentID>} 此条评论的 评论ID (hash)
+     */
+    addComment(content, parent = null) {
+        /** @type {CommentPayload} */
+        const payload = {
+            date: new Date().toISOString(),
+            parent,
+            content,
+        }
+
+        return this.db.add(payload)
+    }
+
+    /**
+     * @typedef {import("./admin.js")} Admin
+     * @param {OrbitDB} orbitdb OrbitDB 实例
+     * @param {Admin} admin Admin (admin.js) 实例 
+     * @param {string} chatDBAddr 页面评论数据库 hash 地址
+     */
+    static async createInstance(orbitdb, admin, chatDBAddr) {
+        // 打开数据库
+        // @ts-ignore
+        const db = await orbitdb.log(chatDBAddr, { create: false })
+        await db.load()
+
+        return new Chat(db, admin)
+    }
+
+}
+
+module.exports = Chat
 
 /* eslint-disable-next-line no-unused-vars */
 const _UNIT_TEST = () => {
@@ -212,7 +297,7 @@ const _UNIT_TEST = () => {
             }
         },
     ]
-    const comments = new Comments(entries, ["banned"])
+    const comments = new CommentsInfo(entries, ["banned"])
     const tree = comments.toTree()
     console.log(JSON.stringify(tree, null, 4))
     // console.log(JSON.stringify(comments, null, 4))

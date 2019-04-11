@@ -40,5 +40,3 @@ interface AdminEntry extends Entry {
         value: AdminPayload;
     };
 }
-
-type EventStore<T> = import("orbit-db-eventstore").EventStore<T>

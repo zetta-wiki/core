@@ -25,3 +25,5 @@ interface Entry {
         value: Object;
     };
 }
+
+type EventStore<T> = import("orbit-db-eventstore").EventStore<T>

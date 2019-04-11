@@ -22,7 +22,7 @@ class AdminInfo {
      * @param {AdminEntry[]} entries
      * @param {UserKey[]} administrators Wiki的管理员
      */
-    constructor(entries, administrators = ["*"]) {
+    constructor(entries, administrators = []) {
         this._admins = safeArray(administrators)
 
         this._entries = safeArray(entries)
@@ -246,13 +246,13 @@ class Admin {
 
     /**
      * @param {OrbitDB} orbitdb 
-     * @param {string} adminDB 
+     * @param {string} adminDBAddr 
      * @param {string[]} administrators 
      */
-    static async createInstance(orbitdb, adminDB, administrators) {
+    static async createInstance(orbitdb, adminDBAddr, administrators) {
         // 打开数据库
         // @ts-ignore
-        const db = await orbitdb.log(adminDB, { create: false })
+        const db = await orbitdb.log(adminDBAddr, { create: false })
         await db.load()
 
         return new Admin(db, administrators)
