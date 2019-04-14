@@ -7,6 +7,9 @@ type UserKey = string;
 type CommentID = string;
 
 /** 页面元数据数据库的hash */
+type PageMetadataDBHash = string;
+
+/** 页面在主数据库中的hash */
 type PageHash = string;
 
 interface Entry {
@@ -27,3 +30,7 @@ interface Entry {
 }
 
 type EventStore<T> = import("orbit-db-eventstore").EventStore<T>
+
+type EntryIterator<T> = IterableIterator<T> & {
+    collect(): T[]
+}
