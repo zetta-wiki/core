@@ -1,6 +1,6 @@
 // @ts-check
 
-/// <reference path="../types/main.ts" />
+/// <reference path="../types/core.ts" />
 
 const IPFS = require("ipfs")
 const { isDefined } = require("./util.js")

@@ -1,7 +1,7 @@
 // @ts-check
 
 /// <reference path="../types/admin.ts" />
-/// <reference path="../types/main.ts" />
+/// <reference path="../types/core.ts" />
 
 const { safeArray } = require("./util.js")
 

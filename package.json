@@ -2,7 +2,7 @@
     "name": "@zetta-wiki/core",
     "version": "0.1.0",
     "description": "",
-    "main": "main.js",
+    "main": "src/core.js",
     "author": "Xmader",
     "homepage": "https://github.com/zetta-wiki/core#readme",
     "repository": {
