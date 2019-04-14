@@ -174,17 +174,22 @@ class Admin {
     }
 
     /**
+     * 获取当前用户公钥
+     * @returns {string}
+     */
+    getPublicKey() {
+        // @ts-ignore
+        return this.db.identity.publicKey
+    }
+
+    /**
      * 判断当前用户是否是管理员
      */
-    _isAdmin() {
-        const { db, administrators } = this
+    isAdmin() {
+        const { administrators } = this
 
-        /** 
-         * 当前用户公钥
-         * @type {string}
-         */
-        // @ts-ignore
-        const key = db.identity.publicKey
+        /** 当前用户公钥 */
+        const key = this.getPublicKey()
 
         return administrators.includes(key) || administrators.includes("*")
     }
@@ -197,7 +202,7 @@ class Admin {
      * @param {AdminCommandText} command 
      */
     _add(target, targetID, command) {
-        if (!this._isAdmin()) {
+        if (!this.isAdmin()) {
             throw new PermissionError()
         }
 
