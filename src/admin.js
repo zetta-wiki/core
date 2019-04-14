@@ -195,6 +195,14 @@ class Admin {
     }
 
     /**
+     * 判断用户是否被封禁
+     * @param {UserKey} key 用户公钥
+     */
+    isBanned(key = this.getPublicKey()) {
+        return this.getBannedUsers().includes(key)
+    }
+
+    /**
      * @private
      * 添加管理记录
      * @param {AdminTarget} target 
