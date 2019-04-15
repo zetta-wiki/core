@@ -59,6 +59,12 @@ const getRandomInt = () => {
  * @param { NodeJS.TypedArray | ArrayBuffer } buffer 
  */
 const toHex = (buffer) => {
+
+    // 将 TypedArray 转为 ArrayBuffer
+    if (ArrayBuffer.isView(buffer)) {
+        buffer = buffer.buffer
+    }
+
     const byteArray = new Uint8Array(buffer)
 
     return [...byteArray].map(value => {
@@ -91,5 +97,6 @@ module.exports = {
     setTimeoutDo,
     getRandomValues,
     getRandomInt,
+    toHex,
     SHA256,
 }
