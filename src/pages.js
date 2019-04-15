@@ -135,6 +135,22 @@ class Pages {
         return this._parsePageEntry(entry)
     }
 
+    async getAllPageObjs() {
+        const entries = this._getEntriesIterator().collect()
+
+        const pageObjs = await Promise.all(
+            entries.filter((entry) => {
+                return this._isValidPageEntry(entry)
+            }).map(async (entry) => {
+                const pageObj = this._parsePageEntry(entry)
+                const isValid = await this._isValidPageObj(pageObj)
+                return isValid && pageObj
+            })
+        )
+
+        return pageObjs.filter(x => !!x)
+    }
+
     /**
      * @param {string} name 页面名称
      * @returns {Promise<PageHash>} 此页面在主数据库中的hash
@@ -156,17 +172,13 @@ class Pages {
             return null
         }
 
-        const metadataDB = await this.zettaDB.newMetadataDB(name)
-        const contentDB = await this.zettaDB.newContentDB(name)
-        const chatDB = await this.zettaDB.newChatDB(name)
+        const allPageDB = await this.zettaDB.newAllPageDB(name)
 
         /** @type {PagePayload} */
         const payload = {
             name,
             date: new Date().toISOString(),
-            metadataDB,
-            contentDB,
-            chatDB,
+            ...allPageDB,
         }
 
         return this.db.add(payload)

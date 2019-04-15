@@ -67,6 +67,17 @@ class ZettaWikiDB {
     }
 
     /**
+     * @param {string} name 页面名称
+     */
+    async newAllPageDB(name) {
+        return {
+            metadataDB: await this.newMetadataDB(name),
+            contentDB: await this.newContentDB(name),
+            chatDB: await this.newChatDB(name),
+        }
+    }
+
+    /**
      * 判断提供的数据库地址是否指向一个合法的 ZettaWiki 数据库
      * @param {string} addr 
      * @returns {Promise<boolean>}
