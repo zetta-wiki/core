@@ -36,7 +36,7 @@ class ZettaWikiDB {
         const time = +new Date()
         const randint = getRandomInt()
         const sha256Name = await SHA256(name)
-        const dbName = `${sha256Name.slice(0, 7)}-${type}-${time}-${randint}`
+        const dbName = `zetta-${sha256Name.slice(0, 7)}-${type}-${time}-${randint}`
 
         const db = await this.orbitdb.log(dbName, this.options)
         await db.load()

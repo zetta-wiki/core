@@ -22,7 +22,7 @@
             "name": "习近平", // 页面名称，添加和查询时自动去除两边空格
             "date": "2019-03-31T18:36:13.271Z", // 添加时间，使用 ISO 8601
             "metadataDB": "", // 元数据数据库的hash，只储存每次更改的diff信息和元数据
-            // 名称使用 name sha256 前7位 + "metadata" + date 时间戳 + 随机整数
+            // 名称使用 "zetta" + name sha256 前7位 + "metadata" + date 时间戳 + 随机整数
             "contentDB": "", // 内容数据库的hash，储存完整页面内容
             "chatDB": "", // 页面聊天、评论数据库
             // "creator": "", // 页面的创建者 (为防止伪造，使用读取 entry.key 代替在这里写入)
