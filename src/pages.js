@@ -135,16 +135,41 @@ class Pages {
         return this._parsePageEntry(entry)
     }
 
-    addPage() {
+    /**
+     * @param {string} name 页面名称
+     * @returns {Promise<PageHash>} 此页面在主数据库中的hash
+     */
+    async addPage(name) {
 
         /** 当前用户公钥 */
         const publicKey = this.admin.getPublicKey()
         if (this.admin.isBanned(publicKey)) {
-            return
+            console.error("当前用户已被封禁")
+            return null
         }
 
-        const name = o.name.trim()
+        name = name.trim()
 
+        // 查找重复页面
+        if (await this.getPageObjByName(name)) {
+            console.error("存在重复页面")
+            return null
+        }
+
+        const metadataDB = await this.zettaDB.newMetadataDB(name)
+        const contentDB = await this.zettaDB.newContentDB(name)
+        const chatDB = await this.zettaDB.newChatDB(name)
+
+        /** @type {PagePayload} */
+        const payload = {
+            name,
+            date: new Date().toISOString(),
+            metadataDB,
+            contentDB,
+            chatDB,
+        }
+
+        return this.db.add(payload)
     }
 
     /**

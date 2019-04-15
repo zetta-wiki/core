@@ -1,5 +1,9 @@
 // @ts-check
 
+const _TextEncoder = typeof TextEncoder !== "undefined"
+    ? TextEncoder
+    : require("util").TextEncoder
+
 /**
  * @param {any} x 
  */
@@ -11,7 +15,7 @@ const isDefined = (x) => {
  * @template T
  * @param {Array<T>} array 
  */
-const safeArray = (array) =>{
+const safeArray = (array) => {
     return Array.isArray(array) ? array.concat() : []
 }
 
@@ -29,8 +33,63 @@ const setTimeoutDo = (promise, ms) => {
     return Promise.race([promise, t])
 }
 
+/**
+ * @param {NodeJS.TypedArray | DataView} buffer 
+ */
+const getRandomValues = (buffer) => {
+    if (typeof top !== "undefined" && top.crypto) {
+        return top.crypto.getRandomValues(buffer)
+    } else {
+        const nodeCrypto = require("crypto")
+        nodeCrypto.randomFillSync(buffer)
+    }
+}
+
+/**
+ * 获取密码级的随机整数 (uint32)
+ */
+const getRandomInt = () => {
+    const buffer = new Uint32Array(1)
+    getRandomValues(buffer)
+    return buffer[0]
+}
+
+/**
+ * TypedArray 转为十六进制字符串表示法
+ * @param { NodeJS.TypedArray | ArrayBuffer } buffer 
+ */
+const toHex = (buffer) => {
+    const byteArray = new Uint8Array(buffer)
+
+    return [...byteArray].map(value => {
+        const hexCode = value.toString(16)
+        return hexCode.padStart(2, "0")
+    }).join("")
+}
+
+/**
+ * @param {string} text 
+ */
+const SHA256 = async (text) => {
+    const encoder = new _TextEncoder()
+    const data = encoder.encode(text)
+
+    if (typeof top !== "undefined" && top.crypto) {
+        const b = await top.crypto.subtle.digest("SHA-256", data)
+        return toHex(b)
+    } else {
+        const crypto = require("crypto")
+        const hash = crypto.createHash("sha256")
+        hash.update(data)
+        return hash.digest("hex")
+    }
+}
+
 module.exports = {
     isDefined,
     safeArray,
     setTimeoutDo,
+    getRandomValues,
+    getRandomInt,
+    SHA256,
 }
