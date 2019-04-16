@@ -154,6 +154,7 @@ class Pages {
     /**
      * @param {string} name 页面名称
      * @returns {Promise<PageHash>} 此页面在主数据库中的hash
+     * @alias newPage
      */
     async addPage(name) {
 
@@ -182,6 +183,14 @@ class Pages {
         }
 
         return this.db.add(payload)
+    }
+
+    /**
+     * @param {string} name 页面名称
+     * @returns {Promise<PageHash>} 此页面在主数据库中的hash
+     */
+    newPage(name){
+        return this.addPage(name)
     }
 
     /**
