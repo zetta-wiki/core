@@ -22,11 +22,12 @@ class Content {
     /**
      * @template {Entry} T
      * @param {EventStore<T>} db 数据库实例
+     * @param {boolean} reverse
      * @returns {EntryIterator<T>}
      */
-    _getEntriesIterator(db) {
+    _getEntriesIterator(db, reverse = true) {
         // @ts-ignore
-        return db.iterator({ limit: -1 })
+        return db.iterator({ limit: -1, reverse })
     }
 
     /**
@@ -48,13 +49,91 @@ class Content {
     }
 
     /**
+     * @param {MetadataEntry} entry 
+     * @param {boolean} checkUserBanned 检查是否是被封禁用户编辑的页面
+     * @param {boolean} checkDeleted 检查本次编辑是否已被删除
+     */
+    _isValidMetadataEntry(entry, checkUserBanned = true, checkDeleted = true) {
+        const payload = entry.payload.value
+        const keys = [
+            "date",
+            "entryHash",
+            "parent",
+            "sha256",
+            "added",
+            "deleted",
+            "diff",
+        ]
+
+        return keys.every(key => payload.hasOwnProperty(key))
+            && !isNaN(Date.parse(payload.date))
+            && typeof payload.added == "number"
+            && typeof payload.deleted == "number"
+            && Array.isArray(payload.diff)
+            && checkUserBanned ? !this.admin.isBanned(entry.key) : true
+    }
+
+    /**
      * 获取最新完整页面内容
      */
     getContent() {
-        for (const entry of this._getEntriesIterator(this.contentdb)) {
+        for (const entry of this._getEntriesIterator(this.contentdb, true)) {
             if (this._isValidContentEntry(entry)) {
                 return entry.payload.value.content
             }
+        }
+    }
+
+    /**
+     * @param {ContentEntryHash} hash 
+     */
+    getContentByEntryHash(hash) {
+        const entry = this.contentdb.get(hash)
+        if (this._isValidContentEntry(entry, false, false)) {
+            return entry.payload.value.content
+        }
+    }
+
+    /**
+     * 从 MetadataEntry 创建 MetadataObj
+     * @param {MetadataEntry} entry 
+     * @returns {MetadataObj}
+     */
+    _createMetadataObj(entry) {
+        const payload = entry.payload.value
+        return {
+            ...payload,
+            editor: entry.key,
+            cid: entry.cid,
+        }
+    }
+
+    * getMetadataObjIterator() {
+        for (const entry of this._getEntriesIterator(this.metadatadb, true)) {
+            if (this._isValidMetadataEntry(entry)) {
+                yield this._createMetadataObj(entry)
+            }
+        }
+    }
+
+    /**
+     * 获取最新的 MetadataObj
+     */
+    getMetadataObj() {
+        for (const entry of this._getEntriesIterator(this.metadatadb, true)) {
+            if (this._isValidMetadataEntry(entry)) {
+                return this._createMetadataObj(entry)
+            }
+        }
+    }
+
+    /**
+     * @param {MetadataEntryHash} cid 
+     */
+    getMetadataObjByEntryCid(cid) {
+        const entry = this.metadatadb.get(cid)
+        if (this._isValidMetadataEntry(entry, false, false)) {
+            return this._createMetadataObj(entry)
         }
     }
 

@@ -8,7 +8,7 @@ interface MetadataPayload {
     /** 修改时间，使用 ISO 8601 */
     date: string;
 
-    /** 指向内容数据库中的 entry 的hash */
+    /** 指向内容数据库中的 entry 的 hash */
     entryHash: ContentEntryHash;
 
     /** 上一个版本的完整页面内容的 sha256 哈希值。如果是新建页面，则为 null */
@@ -36,4 +36,12 @@ interface MetadataEntry extends Entry {
     payload: {
         value: MetadataPayload;
     };
+}
+
+interface MetadataObj extends MetadataPayload {
+    /** 编辑者的用户公钥 (MetadataEntry.key) */
+    editor: UserKey;
+
+    /** 指向页面元数据数据库中的 entry 的 hash (MetadataEntry.cid) */
+    cid: MetadataEntryHash;
 }
