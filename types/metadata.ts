@@ -18,7 +18,7 @@ interface MetadataPayload {
     sha256: ContentSHA256;
 
     /** 增加的字符数 */
-    add: number;
+    added: number;
 
     /** 删除的字符数 */
     deleted: number;
