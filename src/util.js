@@ -55,11 +55,20 @@ const getRandomInt = () => {
 }
 
 /**
+ * @param {number} length 长度 (字节)
+ * @returns {ArrayBuffer}
+ */
+const getRandomData = (length) => {
+    const buffer = new Uint8Array(length)
+    getRandomValues(buffer)
+    return buffer.buffer
+}
+
+/**
  * TypedArray 转为十六进制字符串表示法
  * @param { NodeJS.TypedArray | ArrayBuffer } buffer 
  */
 const toHex = (buffer) => {
-
     // 将 TypedArray 转为 ArrayBuffer
     if (ArrayBuffer.isView(buffer)) {
         buffer = buffer.buffer
@@ -91,12 +100,19 @@ const SHA256 = async (text) => {
     }
 }
 
+const getRandomSHA256 = () => {
+    const data = getRandomData(32)
+    return SHA256(toHex(data))
+}
+
 module.exports = {
     isDefined,
     safeArray,
     setTimeoutDo,
     getRandomValues,
+    getRandomData,
     getRandomInt,
+    getRandomSHA256,
     toHex,
     SHA256,
 }

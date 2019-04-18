@@ -4,7 +4,7 @@
 // @ts-ignore
 const isValidAddress = require("orbit-db").isValidAddress
 
-const { getRandomInt, SHA256 } = require("./util.js")
+const { getRandomData, toHex } = require("./util.js")
 
 /** 创建数据库时的选项 */
 const dbOptions = {
@@ -28,21 +28,25 @@ class ZettaWikiDB {
     }
 
     /**
-     * @param {string} name 页面名称
-     * @param { "metadata" | "content" | "chat" } type 数据库类型
-     * @returns {Promise<string>} 数据库地址
+     * @param {string} dbName 
      */
-    async _newPageDB(name, type) {
-        const time = +new Date()
-        const randint = getRandomInt()
-        const sha256Name = await SHA256(name)
-        const dbName = `zetta-${sha256Name.slice(0, 7)}-${type}-${time}-${randint}`
-
+    async _newDB(dbName) {
         const db = await this.orbitdb.log(dbName, this.options)
         await db.load()
 
         const address = db.address.toString()
         return address
+    }
+
+    /**
+     * @param {string} name 页面名称
+     * @param { "metadata" | "content" | "chat" } type 数据库类型
+     * @returns {Promise<string>} 数据库地址
+     */
+    _newPageDB(name, type) {
+        const randdata = toHex(getRandomData(16))
+        const dbName = `zettawiki-${type}-${randdata}`
+        return this._newDB(dbName)
     }
 
     /**
@@ -75,6 +79,15 @@ class ZettaWikiDB {
             contentDB: await this.newContentDB(name),
             chatDB: await this.newChatDB(name),
         }
+    }
+
+    /**
+     * @returns {Promise<string>} 数据库地址
+     */
+    newWikiDB() {
+        const randdata = toHex(getRandomData(16))
+        const dbName = `zettawiki-${randdata}`
+        return this._newDB(dbName)
     }
 
     /**
