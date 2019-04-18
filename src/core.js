@@ -39,16 +39,19 @@ const defaultOptions = {
  * 创建 OrbitDB 实例
  * @param {ipfs} ipfs IPFS 实例
  */
-const InitOrbitDB = async (ipfs) => {
-    ipfs.on("error", (e) => console.error(e))
+const InitOrbitDB = async (ipfs, errCallback = defaultOptions.errCallback) => {
+    // 绑定 errCallback
+    ipfs.on("error", errCallback)
 
-    // 等待ipfs初始化完成
-    await new Promise((resolve) => {
-        ipfs.on("ready", () => {
-            resolve()
+    if (!ipfs.isOnline()) {
+        // 等待ipfs初始化完成
+        await new Promise((resolve) => {
+            ipfs.on("ready", async () => {
+                await ipfs.start()
+                resolve()
+            })
         })
-        ipfs.start()
-    })
+    }
 
     // 创建 OrbitDB 实例
     const orbitdb = await OrbitDB.createInstance(ipfs)
@@ -129,7 +132,8 @@ class ZettaWiki {
         const ipfs = options.ipfs || defaultIPFS
 
         // 创建 OrbitDB 实例
-        const orbitdb = await InitOrbitDB(ipfs)
+        const errCallback = (options && options.errCallback) || defaultOptions.errCallback
+        const orbitdb = await InitOrbitDB(ipfs, errCallback)
 
         const zettaWiki = new ZettaWiki(orbitdb, options)
         await zettaWiki.InitDB()
