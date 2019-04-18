@@ -4,6 +4,8 @@
 
 const IPFS = require("ipfs")
 const { isDefined } = require("./util.js")
+const Admin = require("./admin.js")
+const Pages = require("./pages.js")
 
 /** @type {typeof import("orbit-db").default} */
 // @ts-ignore
@@ -51,6 +53,17 @@ class ZettaWiki {
         this.orbitdb = orbitdb
     }
 
+    async InitDB() {
+        const orbitdb = this.orbitdb
+        const { mainDB, adminDB, administrators } = this.options
+
+        const admin = await Admin.createInstance(orbitdb, adminDB, administrators)
+        const pages = await Pages.createInstance(orbitdb, admin, mainDB)
+        
+        this.admin = admin
+        this.pages = pages
+    }
+
     get swarm() {
         if (this.options.ipfs) {
             return this.options.ipfs.swarm
@@ -78,7 +91,10 @@ class ZettaWiki {
         // 创建 OrbitDB 实例
         const orbitdb = await OrbitDB.createInstance(ipfs)
 
-        return new ZettaWiki(orbitdb, options)
+        const zettaWiki = new ZettaWiki(orbitdb, options)
+        await zettaWiki.InitDB()
+
+        return zettaWiki
     }
 
 }
