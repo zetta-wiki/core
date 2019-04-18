@@ -6,6 +6,7 @@ const IPFS = require("ipfs")
 const { isDefined } = require("./util.js")
 const Admin = require("./admin.js")
 const Pages = require("./pages.js")
+const ZettaWikiDB = require("./zetta-db.js")
 
 /** @type {typeof import("orbit-db").default} */
 // @ts-ignore
@@ -34,6 +35,26 @@ const defaultOptions = {
 
 }
 
+/**
+ * 创建 OrbitDB 实例
+ * @param {ipfs} ipfs IPFS 实例
+ */
+const InitOrbitDB = async (ipfs) => {
+    ipfs.on("error", (e) => console.error(e))
+
+    // 等待ipfs初始化完成
+    await new Promise((resolve) => {
+        ipfs.on("ready", () => {
+            resolve()
+        })
+        ipfs.start()
+    })
+
+    // 创建 OrbitDB 实例
+    const orbitdb = await OrbitDB.createInstance(ipfs)
+    return orbitdb
+}
+
 class ZettaWiki {
 
     /**
@@ -59,7 +80,7 @@ class ZettaWiki {
 
         const admin = await Admin.createInstance(orbitdb, adminDB, administrators)
         const pages = await Pages.createInstance(orbitdb, admin, mainDB)
-        
+
         this.admin = admin
         this.pages = pages
     }
@@ -73,23 +94,42 @@ class ZettaWiki {
     }
 
     /**
+     * 创建 ZettaWiki 站点
+     * @param {string} name 站点名称
+     * @param {ipfs} ipfs IPFS 实例
+     * @param {OrbitDB} orbitdb OrbitDB 实例
+     * @returns {Promise<InitOptions>}
+     */
+    static async createWiki(name, ipfs = defaultIPFS, orbitdb = null) {
+        if (!orbitdb && ipfs) {
+            orbitdb = await InitOrbitDB(ipfs)
+        }
+
+        const zettaWikiDB = new ZettaWikiDB(orbitdb)
+
+        // @ts-ignore
+        const key = orbitdb.identity.publicKey
+
+        const mainDBAddr = await zettaWikiDB.newWikiDB()
+        const adminDBAddr = await zettaWikiDB.newWikiDB()
+
+        return {
+            name,
+            mainDB: mainDBAddr,
+            adminDB: adminDBAddr,
+            administrators: [key],
+        }
+    }
+
+    /**
      * @param {InitOptions} options 
      */
     static async createInstance(options = defaultOptions) {
 
         const ipfs = options.ipfs || defaultIPFS
-        ipfs.on("error", (e) => console.error(e))
-
-        // 等待ipfs初始化完成
-        await new Promise((resolve) => {
-            ipfs.on("ready", () => {
-                resolve()
-            })
-            ipfs.start()
-        })
 
         // 创建 OrbitDB 实例
-        const orbitdb = await OrbitDB.createInstance(ipfs)
+        const orbitdb = await InitOrbitDB(ipfs)
 
         const zettaWiki = new ZettaWiki(orbitdb, options)
         await zettaWiki.InitDB()
