@@ -157,6 +157,18 @@ class ZettaWiki {
     }
 
     /**
+     * 获取页面编辑历史
+     * @param {string} pageName 页面名称
+     * @param {number} start 
+     * @param {number} end 
+     */
+    async getPageHistory(pageName, start = 0, end = Infinity) {
+        const c = await this._createContentInstanceByName(pageName)
+        const o = [...c.getAllMetadataObjs()]
+        return o.slice(start, end)
+    }
+
+    /**
      * 编辑页面
      * @param {string} pageName 页面名称
      * @param {string} revision 编辑后的页面内容

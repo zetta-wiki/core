@@ -152,6 +152,10 @@ class Content {
         }
     }
 
+    getAllMetadataObjs() {
+        return [...this.getMetadataObjIterator()]
+    }
+
     /**
      * 编辑页面
      * @param {string | null} original 编辑前的页面内容
