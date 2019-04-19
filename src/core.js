@@ -169,6 +169,16 @@ class ZettaWiki {
     }
 
     /**
+     * 获取页面的历史内容
+     * @param {string} pageName 页面名称
+     * @param {ContentEntryHash} entryHash 指向内容数据库中的 entry 的 hash (MetadataObj.entryHash)
+     */
+    async getPageHistoryContent(pageName, entryHash) {
+        const c = await this._createContentInstanceByName(pageName)
+        return c.getContentByEntryHash(entryHash)
+    }
+
+    /**
      * 编辑页面
      * @param {string} pageName 页面名称
      * @param {string} revision 编辑后的页面内容
