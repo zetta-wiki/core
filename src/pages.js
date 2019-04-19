@@ -136,7 +136,7 @@ class Pages {
     }
 
     async getAllPageObjs() {
-        const entries = this._getEntriesIterator().collect()
+        const entries = this._getEntriesIterator().collect().concat()
 
         const pageObjs = await Promise.all(
             entries.filter((entry) => {
@@ -169,8 +169,7 @@ class Pages {
 
         // 查找重复页面
         if (await this.getPageObjByName(name)) {
-            console.error("存在重复页面")
-            return null
+            throw new Error("存在重复页面")
         }
 
         const allPageDB = await this.zettaDB.newAllPageDB(name)
@@ -191,6 +190,10 @@ class Pages {
      */
     newPage(name){
         return this.addPage(name)
+    }
+
+    async destroy() {
+        await this.db.close()
     }
 
     /**

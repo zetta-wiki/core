@@ -7,6 +7,8 @@ const { isDefined } = require("./util.js")
 const Admin = require("./admin.js")
 const Pages = require("./pages.js")
 const ZettaWikiDB = require("./zetta-db.js")
+const Chat = require("./chat.js")
+const Content = require("./content.js")
 
 /** @type {typeof import("orbit-db").default} */
 // @ts-ignore
@@ -94,6 +96,78 @@ class ZettaWiki {
         } else {
             return null
         }
+    }
+
+    static get Chat() {
+        return Chat
+    }
+
+    /**
+     * 从 PageObj 创建 Chat 实例
+     * @param {PageObj} pageObj 
+     */
+    _createChatInstance(pageObj) {
+        return Chat.createInstance(this.orbitdb, this.admin, pageObj.chatDB)
+    }
+
+    static get Content() {
+        return Content
+    }
+
+    /**
+     * 从 PageObj 创建 Content 实例
+     * @param {PageObj} pageObj 
+     */
+    _createContentInstance(pageObj) {
+        const { metadataDB, contentDB } = pageObj
+        return Content.createInstance(this.orbitdb, this.admin, metadataDB, contentDB)
+    }
+
+    /**
+     * 根据页面名称创建 Content 实例
+     * @param {string} pageName 
+     */
+    async _createContentInstanceByName(pageName) {
+        const pageObj = await this.pages.getPageObjByName(pageName)
+        return this._createContentInstance(pageObj)
+    }
+
+    /**
+     * 新建页面
+     * @param {string} name 页面名称
+     * @param {string} content 页面内容
+     * @returns {Promise<PageObj>}
+     */
+    async newPage(name, content) {
+        const pageHash = await this.pages.addPage(name)
+        const pageObj = await this.pages.getPageObjByHash(pageHash)
+        const c = await this._createContentInstance(pageObj)
+        await c.newPageContent(content)
+        await c.destroy()
+        return pageObj
+    }
+
+    /**
+     * 获取页面最新内容
+     * @param {string} pageName 页面名称
+     */
+    async getPageContent(pageName) {
+        const c = await this._createContentInstanceByName(pageName)
+        const content = c.getContent()
+        await c.destroy()
+        return content
+    }
+
+    /**
+     * 编辑页面
+     * @param {string} pageName 页面名称
+     * @param {string} revision 编辑后的页面内容
+     */
+    async editPage(pageName, revision) {
+        const c = await this._createContentInstanceByName(pageName)
+        const original = c.getContent()
+        await c.edit(original, revision)
+        await c.destroy()
     }
 
     /**

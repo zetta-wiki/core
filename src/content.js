@@ -143,6 +143,8 @@ class Content {
      * @param {string} revision 编辑后的页面内容
      */
     async edit(original, revision) {
+        original = original || ""
+
         const date = new Date().toISOString()
         const originalSHA256 = original ? await SHA256(original) : null
         const revisionSHA256 = await SHA256(revision)
@@ -171,6 +173,21 @@ class Content {
         }
 
         return await this.metadatadb.add(metadataPayload)
+    }
+
+    /**
+     * 新页面创建页面内容
+     * @param {string} contentText 页面内容
+     */
+    newPageContent(contentText) {
+        if (!this.getContent()) {
+            return this.edit(null, contentText)
+        }
+    }
+
+    async destroy() {
+        await this.metadatadb.close()
+        await this.contentdb.close()
     }
 
     /**

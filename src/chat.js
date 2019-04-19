@@ -158,7 +158,7 @@ class Chat {
     }
 
     _getEntries() {
-        return this.db.iterator({ limit: -1 }).collect()
+        return this.db.iterator({ limit: -1 }).collect().concat()
     }
 
     getCommentsTree() {
