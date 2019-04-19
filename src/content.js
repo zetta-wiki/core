@@ -26,8 +26,23 @@ class Content {
      * @returns {EntryIterator<T>}
      */
     _getEntriesIterator(db, reverse = true) {
+        // db.iterator 尚未实现 opts.reverse https://github.com/orbitdb/orbit-db-eventstore/issues/25
+        // // @ts-ignore
+        // return db.iterator({ limit: -1, reverse })
+
+        /** @type {T[]} */
         // @ts-ignore
-        return db.iterator({ limit: -1, reverse })
+        const entries = db.iterator({ limit: -1 }).collect().concat()
+
+        if (reverse) {
+            entries.reverse()
+        }
+
+        const iterator = entries.values()
+        iterator["collect"] = () => entries
+
+        // @ts-ignore
+        return iterator
     }
 
     /**
