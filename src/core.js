@@ -143,7 +143,6 @@ class ZettaWiki {
         const pageObj = await this.pages.getPageObjByHash(pageHash)
         const c = await this._createContentInstance(pageObj)
         await c.newPageContent(content)
-        await c.destroy()
         return pageObj
     }
 
@@ -154,7 +153,6 @@ class ZettaWiki {
     async getPageContent(pageName) {
         const c = await this._createContentInstanceByName(pageName)
         const content = c.getContent()
-        await c.destroy()
         return content
     }
 
@@ -167,7 +165,6 @@ class ZettaWiki {
         const c = await this._createContentInstanceByName(pageName)
         const original = c.getContent()
         await c.edit(original, revision)
-        await c.destroy()
     }
 
     /**
