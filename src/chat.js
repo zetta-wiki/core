@@ -224,8 +224,9 @@ class Chat {
      */
     static async createInstance(orbitdb, admin, chatDBAddr, creator) {
         // 打开数据库
+        /** @type {EventStore<any>} */
         // @ts-ignore
-        const db = await orbitdb.log(chatDBAddr, { create: false })
+        const db = await orbitdb.open(chatDBAddr, { type: "eventlog", create: false })
         await ZettaWikiDB.loadDB(db, creator)
 
         return new Chat(db, admin)

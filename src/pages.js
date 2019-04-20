@@ -205,8 +205,9 @@ class Pages {
      */
     static async createInstance(orbitdb, admin, mainDBAddr, wikiCreator) {
         // 打开数据库
+        /** @type {EventStore<any>} */
         // @ts-ignore
-        const db = await orbitdb.log(mainDBAddr, { create: false })
+        const db = await orbitdb.open(mainDBAddr, { type: "eventlog", create: false })
         await ZettaWikiDB.loadDB(db, wikiCreator)
 
         const zettaDB = new ZettaWikiDB(orbitdb)

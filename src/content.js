@@ -220,12 +220,14 @@ class Content {
      */
     static async createInstance(orbitdb, admin, metadataDBAddr, contentDBAddr, creator) {
         // 打开数据库
+        /** @type {EventStore<any>} */
         // @ts-ignore
-        const metadatadb = await orbitdb.log(metadataDBAddr, { create: false })
+        const metadatadb = await orbitdb.open(metadataDBAddr, { type: "eventlog", create: false })
         await ZettaWikiDB.loadDB(metadatadb, creator)
 
+        /** @type {EventStore<any>} */
         // @ts-ignore
-        const contentdb = await orbitdb.log(contentDBAddr, { create: false })
+        const contentdb = await orbitdb.open(contentDBAddr, { type: "eventlog", create: false })
         await ZettaWikiDB.loadDB(contentdb, creator)
 
         return new Content(metadatadb, contentdb, admin)

@@ -266,8 +266,9 @@ class Admin {
      */
     static async createInstance(orbitdb, adminDBAddr, administrators, wikiCreator) {
         // 打开数据库
+        /** @type {EventStore<any>} */
         // @ts-ignore
-        const db = await orbitdb.log(adminDBAddr, { create: false })
+        const db = await orbitdb.open(adminDBAddr, { type: "eventlog", create: false })
         await ZettaWikiDB.loadDB(db, wikiCreator)
 
         return new Admin(db, administrators)

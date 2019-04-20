@@ -31,7 +31,7 @@ class ZettaWikiDB {
      * @param {string} dbName 
      */
     async _newDB(dbName) {
-        const db = await this.orbitdb.log(dbName, this.options)
+        const db = await this.orbitdb.create(dbName, "eventlog", this.options)
         await db.load()
 
         const address = db.address.toString()
@@ -99,7 +99,7 @@ class ZettaWikiDB {
 
         if (isValidAddress(addr)) {
             try {
-                const db = await this.orbitdb.open(addr)
+                const db = await this.orbitdb.open(addr, { type: "eventlog" })
                 await db.close()
 
                 /** @type {string[]} */
