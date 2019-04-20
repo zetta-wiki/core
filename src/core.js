@@ -225,6 +225,7 @@ class ZettaWiki {
     static async createInstance(options = defaultOptions) {
 
         const ipfs = options.ipfs || defaultIPFS
+        options.ipfs = ipfs
 
         // 创建 OrbitDB 实例
         const errCallback = (options && options.errCallback) || defaultOptions.errCallback
