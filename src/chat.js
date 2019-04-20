@@ -3,6 +3,7 @@
 /// <reference path="../types/chat.ts" />
 
 const { safeArray } = require("./util.js")
+const ZettaWikiDB = require("./zetta-db.js")
 
 class CommentsInfo {
 
@@ -219,12 +220,13 @@ class Chat {
      * @param {OrbitDB} orbitdb OrbitDB 实例
      * @param {Admin} admin Admin (admin.js) 实例 
      * @param {string} chatDBAddr 页面评论数据库 hash 地址
+     * @param {UserKey} creator 页面创建者的用户公钥
      */
-    static async createInstance(orbitdb, admin, chatDBAddr) {
+    static async createInstance(orbitdb, admin, chatDBAddr, creator) {
         // 打开数据库
         // @ts-ignore
         const db = await orbitdb.log(chatDBAddr, { create: false })
-        await db.load()
+        await ZettaWikiDB.loadDB(db, creator)
 
         return new Chat(db, admin)
     }

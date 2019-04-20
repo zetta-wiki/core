@@ -188,7 +188,7 @@ class Pages {
      * @param {string} name 页面名称
      * @returns {Promise<PageHash>} 此页面在主数据库中的hash
      */
-    newPage(name){
+    newPage(name) {
         return this.addPage(name)
     }
 
@@ -201,12 +201,13 @@ class Pages {
      * @param {OrbitDB} orbitdb OrbitDB 实例
      * @param {Admin} admin Admin (admin.js) 实例 
      * @param {string} mainDBAddr 主数据库 hash 地址
+     * @param {UserKey} wikiCreator Wiki 的创建者的用户公钥
      */
-    static async createInstance(orbitdb, admin, mainDBAddr) {
+    static async createInstance(orbitdb, admin, mainDBAddr, wikiCreator) {
         // 打开数据库
         // @ts-ignore
         const db = await orbitdb.log(mainDBAddr, { create: false })
-        await db.load()
+        await ZettaWikiDB.loadDB(db, wikiCreator)
 
         const zettaDB = new ZettaWikiDB(orbitdb)
 

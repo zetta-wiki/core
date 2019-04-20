@@ -9,6 +9,9 @@ interface InitOptions {
     /** Wiki 名称 */
     name: string;
 
+    /** Wiki 创建者的用户公钥 */
+    creator: UserKey;
+
     /** 主数据库 hash */
     mainDB: string;
 
@@ -29,5 +32,8 @@ interface InitOptions {
 
     /** 出错时的回调函数 */
     errCallback?: (err: Error) => any;
+
+    /** 其它选项参数 (传递给 UI 和主题) */
+    [key: string]: any;
 
 }

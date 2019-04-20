@@ -29,6 +29,7 @@ const defaultIPFS = new IPFS({
  */
 const defaultOptions = {
     name: "ZettaWiki",
+    creator: "",
     mainDB: null,
     adminDB: null,
     administrators: ["*"],
@@ -81,10 +82,10 @@ class ZettaWiki {
 
     async InitDB() {
         const orbitdb = this.orbitdb
-        const { mainDB, adminDB, administrators } = this.options
+        const { mainDB, adminDB, administrators, creator } = this.options
 
-        const admin = await Admin.createInstance(orbitdb, adminDB, administrators)
-        const pages = await Pages.createInstance(orbitdb, admin, mainDB)
+        const admin = await Admin.createInstance(orbitdb, adminDB, administrators, creator)
+        const pages = await Pages.createInstance(orbitdb, admin, mainDB, creator)
 
         this.admin = admin
         this.pages = pages
@@ -107,7 +108,7 @@ class ZettaWiki {
      * @param {PageObj} pageObj 
      */
     _createChatInstance(pageObj) {
-        return Chat.createInstance(this.orbitdb, this.admin, pageObj.chatDB)
+        return Chat.createInstance(this.orbitdb, this.admin, pageObj.chatDB, pageObj.creator)
     }
 
     static get Content() {
@@ -119,8 +120,8 @@ class ZettaWiki {
      * @param {PageObj} pageObj 
      */
     _createContentInstance(pageObj) {
-        const { metadataDB, contentDB } = pageObj
-        return Content.createInstance(this.orbitdb, this.admin, metadataDB, contentDB)
+        const { metadataDB, contentDB, creator } = pageObj
+        return Content.createInstance(this.orbitdb, this.admin, metadataDB, contentDB, creator)
     }
 
     /**
@@ -211,6 +212,7 @@ class ZettaWiki {
 
         return {
             name,
+            creator: key,
             mainDB: mainDBAddr,
             adminDB: adminDBAddr,
             administrators: [key],

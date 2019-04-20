@@ -5,6 +5,7 @@
 
 const Diff = require("@xmader/textdiff")
 const { SHA256 } = require("./util.js")
+const ZettaWikiDB = require("./zetta-db.js")
 
 class Content {
 
@@ -215,16 +216,17 @@ class Content {
      * @param {Admin} admin Admin (admin.js) 实例 
      * @param {string} metadataDBAddr 页面内容数据库地址
      * @param {string} contentDBAddr 页面元数据数据库地址
+     * @param {UserKey} creator 页面的创建者用户公钥
      */
-    static async createInstance(orbitdb, admin, metadataDBAddr, contentDBAddr) {
+    static async createInstance(orbitdb, admin, metadataDBAddr, contentDBAddr, creator) {
         // 打开数据库
         // @ts-ignore
         const metadatadb = await orbitdb.log(metadataDBAddr, { create: false })
-        await metadatadb.load()
+        await ZettaWikiDB.loadDB(metadatadb, creator)
 
         // @ts-ignore
         const contentdb = await orbitdb.log(contentDBAddr, { create: false })
-        await contentdb.load()
+        await ZettaWikiDB.loadDB(contentdb, creator)
 
         return new Content(metadatadb, contentdb, admin)
     }

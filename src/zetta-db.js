@@ -115,6 +115,34 @@ class ZettaWikiDB {
         return false
     }
 
+    /**
+     * 加载数据库
+     * @param {EventStore<any>} db 
+     * @param {UserKey} creator
+     */
+    static async loadDB(db, creator) {
+        await db.load()
+
+        /** 
+         * @type {string}
+         * 当前用户公钥
+         */
+        // @ts-ignore
+        const key = db.identity.publicKey
+        if (key == creator) {
+            return
+        }
+
+        await new Promise((resolve) => {
+            db.events.on("replicated", () => {
+                if (db.replicationStatus.progress >= db.replicationStatus.max) {
+                    resolve()
+                }
+            })
+        })
+
+    }
+
 }
 
 module.exports = ZettaWikiDB

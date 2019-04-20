@@ -4,6 +4,7 @@
 /// <reference path="../types/core.ts" />
 
 const { safeArray } = require("./util.js")
+const ZettaWikiDB = require("./zetta-db.js")
 
 class PermissionError extends Error {
     /**
@@ -261,12 +262,13 @@ class Admin {
      * @param {OrbitDB} orbitdb 
      * @param {string} adminDBAddr 
      * @param {string[]} administrators 
+     * @param {UserKey} wikiCreator Wiki 的创建者的用户公钥
      */
-    static async createInstance(orbitdb, adminDBAddr, administrators) {
+    static async createInstance(orbitdb, adminDBAddr, administrators, wikiCreator) {
         // 打开数据库
         // @ts-ignore
         const db = await orbitdb.log(adminDBAddr, { create: false })
-        await db.load()
+        await ZettaWikiDB.loadDB(db, wikiCreator)
 
         return new Admin(db, administrators)
     }
