@@ -35,7 +35,7 @@ class CommentsInfo {
             const clock = x.clock && x.clock.time
             return {
                 id: x.cid,
-                order: Number.isInteger(clock) ? clock : -1,
+                order: (Number.isInteger(clock) ? clock : -1),
                 author: x.key,
                 ...x.payload.value,
                 deleted: isDeleted(x) || undefined,
@@ -141,7 +141,7 @@ class CommentsInfo {
 
         return keys.every(key => payload.hasOwnProperty(key))
             && !isNaN(Date.parse(payload.date))
-            && typeof payload.content === "string"
+            && (typeof payload.content === "string")
             && (payload.parent === null || typeof payload.parent === "string")
     }
 

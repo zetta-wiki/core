@@ -61,7 +61,7 @@ class Content {
         return keys.every(key => payload.hasOwnProperty(key))
             && keys.every(key => typeof payload[key] === "string")
             && !isNaN(Date.parse(payload.date))
-            && checkUserBanned ? !this.admin.isBanned(entry.key) : true
+            && (checkUserBanned ? !this.admin.isBanned(entry.key) : true)
     }
 
     /**
@@ -83,10 +83,10 @@ class Content {
 
         return keys.every(key => payload.hasOwnProperty(key))
             && !isNaN(Date.parse(payload.date))
-            && typeof payload.added == "number"
-            && typeof payload.deleted == "number"
+            && (typeof payload.added == "number")
+            && (typeof payload.deleted == "number")
             && Array.isArray(payload.diff)
-            && checkUserBanned ? !this.admin.isBanned(entry.key) : true
+            && (checkUserBanned ? !this.admin.isBanned(entry.key) : true)
     }
 
     /**

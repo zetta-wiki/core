@@ -44,8 +44,8 @@ class Pages {
         return keys.every(key => payload.hasOwnProperty(key))
             && keys.every(key => typeof payload[key] === "string")
             && !isNaN(Date.parse(payload.date))
-            && payload.name == payload.name.trim()
-            && checkUserBanned ? !this.admin.isBanned(entry.key) : true
+            && (payload.name == payload.name.trim())
+            && (checkUserBanned ? !this.admin.isBanned(entry.key) : true)
     }
 
     /**
@@ -103,7 +103,7 @@ class Pages {
 
             const pageObj = this._parsePageEntry(entry)
 
-            if (pageObj.name.trim() == name.trim()) {
+            if (pageObj.name && pageObj.name.trim() == name.trim()) {
                 const isValid = await this._isValidPageObj(pageObj)
                 if (isValid) {
                     return pageObj

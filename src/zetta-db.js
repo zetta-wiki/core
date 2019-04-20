@@ -34,6 +34,18 @@ class ZettaWikiDB {
         const db = await this.orbitdb.create(dbName, "eventlog", this.options)
         await db.load()
 
+        // @ts-ignore
+        await db._addOperation({
+            op: "INIT",
+            key: null,
+            value: {
+                op: "INIT",
+                date: new Date().toISOString(),
+                // @ts-ignore
+                creator: db.identity.publicKey,
+            }
+        })
+
         const address = db.address.toString()
         return address
     }
@@ -116,6 +128,24 @@ class ZettaWikiDB {
     }
 
     /**
+     * 判断数据库是否已经加载完全
+     * @param {EventStore<any>} db 
+     * @param {UserKey} creator 数据库的创建者
+     */
+    static isLoaded(db, creator) {
+        try {
+            const entries = db.iterator({ limit: -1 }).collect()
+            const isInitedByCreator = entries.some((entry) => {
+                // @ts-ignore
+                return entry.payload.op == "INIT" && entry.key == creator
+            })
+            return isInitedByCreator && db.replicationStatus.progress >= db.replicationStatus.max    
+        } catch (err) {
+            return false
+        }
+    }
+
+    /**
      * 加载数据库
      * @param {EventStore<any>} db 
      * @param {UserKey} creator
@@ -129,16 +159,25 @@ class ZettaWikiDB {
          */
         // @ts-ignore
         const key = db.identity.publicKey
+        // 数据库由当前用户创建
         if (key == creator) {
             return
         }
 
+        // 数据库已经加载完全
+        if (ZettaWikiDB.isLoaded(db, creator)) {
+            return
+        }
+
+        // 等待数据库加载完全
         await new Promise((resolve) => {
-            db.events.on("replicated", () => {
-                if (db.replicationStatus.progress >= db.replicationStatus.max) {
+            const listener = () => {
+                if (ZettaWikiDB.isLoaded(db, creator)) {
+                    db.events.removeListener("replicated", listener)
                     resolve()
                 }
-            })
+            }
+            db.events.on("replicated", listener)
         })
 
     }
